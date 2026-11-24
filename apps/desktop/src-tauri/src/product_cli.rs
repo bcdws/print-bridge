@@ -19,7 +19,7 @@ impl DesktopProductCommandAdapter {
         let executable = desktop_executable_path().map_err(runtime_error)?;
         let mut builder = AutoLaunchBuilder::new();
         builder
-            .set_app_name("PrintBridge")
+            .set_app_name("TdPrint")
             .set_app_path(&executable.to_string_lossy());
         #[cfg(target_os = "macos")]
         builder.set_use_launch_agent(false);
@@ -103,9 +103,9 @@ fn desktop_executable_path() -> Result<PathBuf, std::io::Error> {
 fn windows_gui_executable_path(executable: &std::path::Path) -> PathBuf {
     let value = executable.to_string_lossy();
     if let Some(index) = value.rfind(['\\', '/']) {
-        return PathBuf::from(format!("{}PrintBridge.exe", &value[..=index]));
+        return PathBuf::from(format!("{}TdPrint.exe", &value[..=index]));
     }
-    PathBuf::from("PrintBridge.exe")
+    PathBuf::from("TdPrint.exe")
 }
 
 fn runtime_error(error: impl ToString) -> CommandError {
@@ -123,7 +123,7 @@ mod tests {
             windows_gui_executable_path(Path::new(
                 r"C:\Users\me\AppData\Local\PrintBridge\print-bridge.exe"
             )),
-            PathBuf::from(r"C:\Users\me\AppData\Local\PrintBridge\PrintBridge.exe")
+            PathBuf::from(r"C:\Users\me\AppData\Local\PrintBridge\TdPrint.exe")
         );
     }
 }

@@ -109,8 +109,10 @@ const DEFAULT_REMOTE_CONFIG: AgentConfig['remote'] = {
   history_retention_days: 3,
 };
 
-const GITHUB_REPOSITORY_URL = 'https://github.com/vergil-lai/print-bridge';
-const GITHUB_RELEASES_URL = 'https://github.com/vergil-lai/print-bridge/releases';
+const GITHUB_REPOSITORY_URL = 'https://github.com/bcdws/print-bridge';
+const GITHUB_RELEASES_URL = 'https://github.com/bcdws/print-bridge/releases';
+/** 上游项目主页，用于保留 Apache-2.0 归属声明。 */
+const UPSTREAM_REPOSITORY_URL = 'https://github.com/vergil-lai/print-bridge';
 const MIN_SERVICE_PORT = 10000;
 const MAX_SERVICE_PORT = 65535;
 const MIN_REMOTE_POLL_INTERVAL_SECONDS = 3;
@@ -496,7 +498,7 @@ async function runExportConfig(): Promise<void> {
   try {
     const path = await saveDialog({
       defaultPath: 'printbridge-config.json',
-      filters: [{ name: 'PrintBridge Config', extensions: ['json'] }],
+      filters: [{ name: 'TdPrint Config', extensions: ['json'] }],
     });
     if (!path) return;
 
@@ -526,7 +528,7 @@ function resetImportPreview(): void {
 async function chooseImportFile(): Promise<void> {
   const path = await openDialog({
     multiple: false,
-    filters: [{ name: 'PrintBridge Config', extensions: ['json'] }],
+    filters: [{ name: 'TdPrint Config', extensions: ['json'] }],
   });
   if (typeof path === 'string') {
     importPath.value = path;
@@ -1135,6 +1137,26 @@ async function openReleaseNotes(): Promise<void> {
   }
 }
 
+/** 打开上游开源项目主页，保留 Apache-2.0 归属。 */
+async function openUpstreamRepository(): Promise<void> {
+  try {
+    await openUrl(UPSTREAM_REPOSITORY_URL);
+  } catch (error) {
+    updateStatus.value = 'error';
+    updateMessage.value = error instanceof Error ? error.message : t('openGithubFailed');
+  }
+}
+
+/** 打开 Apache-2.0 许可证全文。 */
+async function openLicenseFile(): Promise<void> {
+  try {
+    await openUrl(`${UPSTREAM_REPOSITORY_URL}/blob/main/LICENSE`);
+  } catch (error) {
+    updateStatus.value = 'error';
+    updateMessage.value = error instanceof Error ? error.message : t('openGithubFailed');
+  }
+}
+
 async function loadCliIntegrationStatus(): Promise<void> {
   try {
     cliIntegrationStatus.value = await getCliIntegrationStatus();
@@ -1181,7 +1203,7 @@ onBeforeUnmount(() => {
         class="flex flex-col gap-3 border-b bg-background/80 pb-4 md:flex-row md:items-center md:justify-between"
       >
         <div data-tour="app-status">
-          <h1 class="text-xl font-semibold tracking-normal">PrintBridge</h1>
+          <h1 class="text-xl font-semibold tracking-normal">TdPrint</h1>
           <p class="text-sm text-muted-foreground">{{ t('localPort') }} {{ servicePort || '-' }}</p>
         </div>
         <div data-tour="config-transfer" class="flex flex-wrap items-center gap-2">
@@ -1675,7 +1697,7 @@ onBeforeUnmount(() => {
                     <img :src="appIcon" alt="" class="mt-1 size-10 rounded-md" />
                     <div class="min-w-0">
                       <div class="flex flex-wrap items-center gap-2">
-                        <h3 class="text-xl font-semibold tracking-normal">PrintBridge</h3>
+                        <h3 class="text-xl font-semibold tracking-normal">TdPrint</h3>
                         <Badge variant="outline">{{ t('version') }} v{{ currentAppVersion }}</Badge>
                       </div>
                       <p class="mt-2 text-sm text-muted-foreground">{{ t('aboutDescription') }}</p>
@@ -1757,6 +1779,24 @@ onBeforeUnmount(() => {
                     class="max-h-36 overflow-auto whitespace-pre-wrap rounded-md border bg-muted/20 px-3 py-2 text-sm"
                   >
                     {{ updateInfo.body }}
+                  </div>
+                </div>
+
+                <div
+                  data-testid="about-license"
+                  class="grid gap-1 rounded-md border bg-muted/20 px-4 py-3 text-xs text-muted-foreground"
+                >
+                  <p>{{ t('licenseNotice') }}</p>
+                  <p>{{ t('licenseThirdParty') }}</p>
+                  <div class="flex flex-wrap gap-2 pt-1">
+                    <Button variant="outline" size="sm" @click="openUpstreamRepository">
+                      <ExternalLink class="size-4" />
+                      {{ t('upstreamRepository') }}
+                    </Button>
+                    <Button variant="outline" size="sm" @click="openLicenseFile">
+                      <ExternalLink class="size-4" />
+                      {{ t('viewLicense') }}
+                    </Button>
                   </div>
                 </div>
               </CardContent>

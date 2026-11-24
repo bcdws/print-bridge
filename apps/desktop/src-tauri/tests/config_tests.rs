@@ -39,7 +39,13 @@ fn agent_config_defaults_match_grouped_baseline() {
 
     assert_eq!(config.service.host, "127.0.0.1");
     assert_eq!(config.service.port, 17890);
-    assert!(config.security.allowed_origins.is_empty());
+    assert_eq!(
+        config.security.allowed_origins,
+        vec![
+            "https://oms.tongdacdsc.com".to_string(),
+            "https://pt.kuasuda.com".to_string(),
+        ]
+    );
     assert_eq!(config.security.allowed_ips, vec!["127.0.0.1".to_string()]);
     assert_eq!(config.printing.default_printer, None);
     assert_eq!(config.printing.default_paper, None);

@@ -9,7 +9,7 @@ use std::{
 };
 
 /// 系统配置目录中使用的应用目录名。
-pub const APP_CONFIG_DIR_NAME: &str = "com.vergil.printbridge";
+pub const APP_CONFIG_DIR_NAME: &str = "com.td.printbridge";
 /// Agent 配置文件名。
 pub const CONFIG_FILE_NAME: &str = "config.json";
 /// 本地任务历史数据库文件名。
@@ -35,6 +35,14 @@ pub const MIN_REMOTE_MAX_REPORT_RETRIES: u32 = 1;
 /// 返回默认 IP 白名单，保留本机回环地址。
 fn default_allowed_ips() -> Vec<String> {
     vec![REQUIRED_LOOPBACK_IP.to_string()]
+}
+
+/// 返回默认允许连接本地打印服务的浏览器 Origin 白名单。
+fn default_allowed_origins() -> Vec<String> {
+    vec![
+        "https://oms.tongdacdsc.com".to_string(),
+        "https://pt.kuasuda.com".to_string(),
+    ]
 }
 
 fn default_ui_language() -> UiLanguage {
@@ -119,6 +127,7 @@ pub struct ServiceConfig {
 /// 允许打开 PrintBridge WebSocket 会话的浏览器 Origin。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SecurityConfig {
+    #[serde(default = "default_allowed_origins")]
     pub allowed_origins: Vec<String>,
     #[serde(default = "default_allowed_ips")]
     pub allowed_ips: Vec<String>,
@@ -195,7 +204,7 @@ impl Default for AgentConfig {
                 port: DEFAULT_PORT,
             },
             security: SecurityConfig {
-                allowed_origins: Vec::new(),
+                allowed_origins: default_allowed_origins(),
                 allowed_ips: default_allowed_ips(),
             },
             printing: PrintingConfig {

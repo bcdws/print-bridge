@@ -1,5 +1,5 @@
 {
-  "mainBinaryName": "PrintBridge",
+  "mainBinaryName": "TdPrint",
   "bundle": {
     "externalBin": ["binaries/print-bridge"],
     "resources": {

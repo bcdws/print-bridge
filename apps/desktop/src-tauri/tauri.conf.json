@@ -1,9 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "PrintBridge",
+  "productName": "TdPrint",
   "mainBinaryName": "print-bridge",
   "version": "0.2.7",
-  "identifier": "com.vergil.printbridge",
+  "identifier": "com.td.printbridge",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "PrintBridge",
+        "title": "TdPrint",
         "width": 960,
         "height": 680,
         "maxWidth": 960,
@@ -47,9 +47,9 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUzREM0MzUxOTIxM0UxNTIKUldSUzRST1NVVVBjVXhZWnd4NzZwNmpSV3hyNVFPYllWQnE0UVBZSjEwUmFzSzFwUkVuWXlKb1gK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDIzRTFENEE5M0E1MzhDM0UKUldRK2pGTTZxZFRoSXpvalJvU25VT042R0orQU5mampnMDZNUjB2Ukg2bnZ0QnhhcSt4V2ZZdlYK",
       "endpoints": [
-        "https://github.com/vergil-lai/print-bridge/releases/latest/download/latest.json"
+        "https://github.com/bcdws/print-bridge/releases/latest/download/latest.json"
       ]
     }
   }
