@@ -1,0 +1,151 @@
+name: release-windows
+
+# 只在手动触发时运行，平时 commit 不会构建。
+# 用法：在 Actions 页面点 Run workflow，或
+#   gh workflow run release-windows.yml -f bump=patch -f notes="修复 XXX"
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: '版本递增方式：patch / minor / major，或直接填版本号（如 1.0.0）'
+        required: true
+        default: patch
+        type: string
+      notes:
+        description: '更新说明（显示在客户端的“检查更新”里）'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-windows
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.7.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: . -> target
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Bump version
+        id: version
+        shell: bash
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          set -euo pipefail
+          CURRENT="$(node scripts/tdprint-version.mjs current)"
+          NEXT="$(node scripts/tdprint-version.mjs next "$BUMP")"
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "tag=tdprint-v${NEXT}" >> "$GITHUB_OUTPUT"
+          node scripts/tdprint-version.mjs write "$NEXT"
+          echo "Bumping ${CURRENT} -> ${NEXT}"
+
+      - name: Prepare Windows CLI sidecar
+        run: node scripts/prepare-windows-cli.mjs x86_64-pc-windows-msvc
+
+      - name: Build NSIS installer
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: pnpm --dir apps/desktop tauri build --target x86_64-pc-windows-msvc --bundles nsis
+
+      - name: Collect installer paths
+        id: assets
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          DIR="target/x86_64-pc-windows-msvc/release/bundle/nsis"
+          INSTALLER="$(ls "$DIR"/TdPrint_"${VERSION}"_x64-setup.exe)"
+          SIGNATURE="$(ls "$DIR"/TdPrint_"${VERSION}"_x64-setup.exe.sig)"
+          echo "installer=$INSTALLER" >> "$GITHUB_OUTPUT"
+          echo "signature=$SIGNATURE" >> "$GITHUB_OUTPUT"
+
+      - name: Generate updater manifest
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          NOTES: ${{ inputs.notes }}
+          INSTALLER: ${{ steps.assets.outputs.installer }}
+          SIGNATURE: ${{ steps.assets.outputs.signature }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$NOTES" > notes.txt
+          DOWNLOAD_URL="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/$(basename "$INSTALLER")"
+          node scripts/tdprint-updater-json.mjs \
+            "$INSTALLER" "$SIGNATURE" "$VERSION" "$DOWNLOAD_URL" notes.txt
+
+      - name: Commit version bump
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add apps/desktop/package.json apps/desktop/src-tauri/tauri.conf.json Cargo.toml Cargo.lock
+          git commit -m "chore: 发版本 v${VERSION}"
+          git tag "$TAG"
+          git push origin "HEAD:${{ github.ref_name }}"
+          git push origin "$TAG"
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "TdPrint v${VERSION}" \
+            --notes "${NOTES:-TdPrint v${VERSION}}" \
+            "${{ steps.assets.outputs.installer }}" \
+            "${{ steps.assets.outputs.signature }}" \
+            latest.json
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TdPrint-${{ steps.version.outputs.version }}-windows-x64
+          path: |
+            ${{ steps.assets.outputs.installer }}
+            ${{ steps.assets.outputs.signature }}
+          retention-days: 30

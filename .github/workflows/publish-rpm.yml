@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   publish:
-    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.prerelease }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (startsWith(github.event.release.tag_name, 'printbridge-v') && !github.event.release.prerelease) }}
     runs-on: ubuntu-22.04
     env:
       R2_BUCKET: printbridge-packages

@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   update-cask:
-    if: ${{ github.event_name == 'workflow_dispatch' || !github.event.release.prerelease }}
+    if: ${{ github.event_name == 'workflow_dispatch' || (startsWith(github.event.release.tag_name, 'printbridge-v') && !github.event.release.prerelease) }}
     runs-on: macos-latest
     env:
       TAP_REPOSITORY: vergil-lai/homebrew-tap
