@@ -10,6 +10,7 @@ use crate::{
     },
     queue::QueueError,
     state::AgentState,
+    tdprint_auth,
 };
 use axum::{
     extract::{
@@ -17,7 +18,7 @@ use axum::{
         ws::{Message, WebSocket, WebSocketUpgrade},
         Request, State,
     },
-    http::{header::ORIGIN, HeaderMap, StatusCode},
+    http::{header::ORIGIN, HeaderMap, StatusCode, Uri},
     middleware::{self, Next},
     response::{IntoResponse, Response},
     routing::get,
@@ -102,6 +103,7 @@ pub async fn run_server(state: AgentState) -> Result<(), ServerError> {
 /// 把允许的浏览器连接升级为 PrintBridge WebSocket 协议。
 async fn ws_handler(
     State(state): State<AgentState>,
+    uri: Uri,
     headers: HeaderMap,
     ws: WebSocketUpgrade,
 ) -> Response {
@@ -109,7 +111,10 @@ async fn ws_handler(
         .get(ORIGIN)
         .and_then(|value| value.to_str().ok())
         .map(str::to_owned);
-    if !is_ws_origin_allowed(&state, origin.as_deref()).await {
+    // TdPrint：携带内置令牌的本机 Origin（localhost / 回环）或无 Origin 请求同样放行。
+    if !is_ws_origin_allowed(&state, origin.as_deref()).await
+        && !tdprint_auth::allows_origin(&uri, &headers, origin.as_deref())
+    {
         return StatusCode::FORBIDDEN.into_response();
     }
 
@@ -138,7 +143,10 @@ async fn ip_whitelist_middleware(
         return next.run(request).await;
     };
 
-    if is_client_ip_allowed_for_state(&state, addr.ip()).await {
+    // TdPrint：携带内置令牌的请求跳过 IP 白名单（Origin 仍在 ws_handler 校验）。
+    if tdprint_auth::is_request_authorized(request.uri(), request.headers())
+        || is_client_ip_allowed_for_state(&state, addr.ip()).await
+    {
         next.run(request).await
     } else {
         client_ip_error_response()

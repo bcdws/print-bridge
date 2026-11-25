@@ -21,6 +21,7 @@ pub mod remote_worker;
 pub mod server;
 pub mod state;
 pub mod task_history;
+pub mod tdprint_auth;
 pub mod test_print;
 
 pub use agent::{AgentHandle, AgentRuntime, RuntimeError};
