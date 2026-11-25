@@ -72,11 +72,23 @@ jobs:
           node scripts/tdprint-version.mjs write "$NEXT"
           echo "Bumping ${CURRENT} -> ${NEXT}"
 
+      # TdPrint 固定访问令牌在编译期注入（见 crates/runtime/src/tdprint_auth.rs），缺失时不发版。
+      - name: Check TdPrint auth token
+        shell: bash
+        env:
+          TDPRINT_AUTH_TOKEN: ${{ secrets.TDPRINT_AUTH_TOKEN }}
+        run: |
+          if [ -z "${TDPRINT_AUTH_TOKEN// /}" ]; then
+            echo "::error::缺少仓库 Secret TDPRINT_AUTH_TOKEN"
+            exit 1
+          fi
+
       - name: Prepare Windows CLI sidecar
         run: node scripts/prepare-windows-cli.mjs x86_64-pc-windows-msvc
 
       - name: Build NSIS installer
         env:
+          TDPRINT_AUTH_TOKEN: ${{ secrets.TDPRINT_AUTH_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: pnpm --dir apps/desktop tauri build --target x86_64-pc-windows-msvc --bundles nsis
