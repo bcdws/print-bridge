@@ -93,6 +93,12 @@ import CliIntegrationRow from '@/components/CliIntegrationRow.vue';
 import StatusDoctorSheet from '@/components/StatusDoctorSheet.vue';
 import { DEFAULT_UI_LANGUAGE, isUiLanguage, setI18nLocale, type UiLanguage } from '@/i18n';
 import { useOnboarding } from '@/onboarding';
+import {
+  TDPRINT_SHOW_REMOTE,
+  TDPRINT_SHOW_REPOSITORY_LINKS,
+  visibleAllowedIps,
+  visibleAllowedOrigins,
+} from '@/tdprint';
 
 const DEFAULT_PAPER: EffectivePaper = {
   width_mm: 60,
@@ -1287,9 +1293,12 @@ onBeforeUnmount(() => {
       </Card>
 
       <Tabs v-else-if="config" v-model="activeTab">
-        <TabsList class="grid w-full grid-cols-6 md:w-[720px]">
+        <TabsList
+          class="grid w-full md:w-[720px]"
+          :class="TDPRINT_SHOW_REMOTE ? 'grid-cols-6' : 'grid-cols-5'"
+        >
           <TabsTrigger value="settings"> {{ t('settings') }} </TabsTrigger>
-          <TabsTrigger value="remote"> {{ t('remote') }} </TabsTrigger>
+          <TabsTrigger v-if="TDPRINT_SHOW_REMOTE" value="remote"> {{ t('remote') }} </TabsTrigger>
           <TabsTrigger value="website-whitelist"> {{ t('websiteWhitelist') }} </TabsTrigger>
           <TabsTrigger value="ip-whitelist"> {{ t('ipWhitelist') }} </TabsTrigger>
           <TabsTrigger value="logs"> {{ t('tasks') }} </TabsTrigger>
@@ -1505,7 +1514,7 @@ onBeforeUnmount(() => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="remote" class="mt-2">
+        <TabsContent v-if="TDPRINT_SHOW_REMOTE" value="remote" class="mt-2">
           <Card>
             <CardContent data-tour="remote-settings" class="grid gap-5 pt-6">
               <div class="flex items-center justify-between gap-3">
@@ -1621,7 +1630,7 @@ onBeforeUnmount(() => {
               </form>
               <div class="grid gap-2">
                 <div
-                  v-for="origin in config.security.allowed_origins"
+                  v-for="origin in visibleAllowedOrigins(config.security.allowed_origins)"
                   :key="origin"
                   class="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
                 >
@@ -1637,7 +1646,7 @@ onBeforeUnmount(() => {
                   </Button>
                 </div>
                 <p
-                  v-if="config.security.allowed_origins.length === 0"
+                  v-if="visibleAllowedOrigins(config.security.allowed_origins).length === 0"
                   class="rounded-md border border-dashed px-3 py-6 text-center text-sm text-muted-foreground"
                 >
                   {{ t('noWhitelistOrigins') }}
@@ -1666,7 +1675,7 @@ onBeforeUnmount(() => {
               </form>
               <div class="grid gap-2">
                 <div
-                  v-for="entry in config.security.allowed_ips"
+                  v-for="entry in visibleAllowedIps(config.security.allowed_ips)"
                   :key="entry"
                   class="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm"
                 >
@@ -1709,11 +1718,19 @@ onBeforeUnmount(() => {
                       <CircleHelp class="size-4" />
                       {{ t('replayOnboarding') }}
                     </Button>
-                    <Button variant="outline" @click="openGitHubRepository">
+                    <Button
+                      v-if="TDPRINT_SHOW_REPOSITORY_LINKS"
+                      variant="outline"
+                      @click="openGitHubRepository"
+                    >
                       <ExternalLink class="size-4" />
                       GitHub
                     </Button>
-                    <Button variant="outline" @click="openReleaseNotes">
+                    <Button
+                      v-if="TDPRINT_SHOW_REPOSITORY_LINKS"
+                      variant="outline"
+                      @click="openReleaseNotes"
+                    >
                       <ExternalLink class="size-4" />
                       {{ t('releaseNotes') }}
                     </Button>

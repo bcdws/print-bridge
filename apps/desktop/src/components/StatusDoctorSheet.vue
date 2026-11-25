@@ -13,6 +13,7 @@ import {
 } from 'reka-ui';
 import { runDoctor } from '@/api';
 import { groupDoctorChecks } from '@/doctor-display';
+import { visibleDoctorGroups } from '@/tdprint';
 import { Button } from '@/components/ui/button';
 import type { DoctorReport, DoctorStatus } from '@/types';
 
@@ -24,7 +25,7 @@ const loading = ref(false);
 const report = ref<DoctorReport | null>(null);
 const callFailed = ref(false);
 const completedAt = ref<Date | null>(null);
-const groups = computed(() => groupDoctorChecks(report.value?.checks ?? []));
+const groups = computed(() => visibleDoctorGroups(groupDoctorChecks(report.value?.checks ?? [])));
 const completedTime = computed(() =>
   completedAt.value
     ? new Intl.DateTimeFormat(locale.value, {
