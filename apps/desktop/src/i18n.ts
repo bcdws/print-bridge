@@ -298,6 +298,9 @@ export const messages = {
     remoteTaskAuthorizationToken: '远程任务 Authorization Token',
     pollInterval: '轮询时间',
     ipPlaceholder: '192.168.1.23 或 192.168.1.0/24',
+    downloadLogs: '下载日志',
+    logsDownloaded: '日志已保存，可发给开发人员分析',
+    downloadLogsFailed: '下载日志失败',
   },
   en: {
     localPort: 'Local port',
@@ -606,6 +609,9 @@ export const messages = {
     remoteTaskAuthorizationToken: 'Remote task Authorization Token',
     pollInterval: 'Poll interval',
     ipPlaceholder: '192.168.1.23 or 192.168.1.0/24',
+    downloadLogs: 'Download logs',
+    logsDownloaded: 'Logs saved. Send the file to the developers for analysis.',
+    downloadLogsFailed: 'Failed to download logs',
   },
 } as const;
 

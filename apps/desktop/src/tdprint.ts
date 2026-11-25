@@ -1,6 +1,7 @@
 /**
  * TdPrint 发行版界面定制。集中在本文件，App.vue 等上游文件只保留少量引用，便于合并上游更新。
  */
+import { invoke } from '@tauri-apps/api/core';
 
 /** 远程任务 Tab（以及状态检测里的远程任务分组）暂不开放。 */
 export const TDPRINT_SHOW_REMOTE = false;
@@ -33,4 +34,17 @@ export function visibleAllowedIps(entries: readonly string[]): string[] {
 /** 状态检测分组：远程任务未开放时不展示其分组。 */
 export function visibleDoctorGroups<T extends { key: string }>(groups: T[]): T[] {
   return TDPRINT_SHOW_REMOTE ? groups : groups.filter((group) => group.key !== 'remote');
+}
+
+/** 诊断日志默认文件名：TdPrint-诊断日志-20261125-153000.txt（本机时间）。 */
+export function diagnosticsFileName(now: Date = new Date()): string {
+  const pad = (value: number) => String(value).padStart(2, '0');
+  const date = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+  const time = `${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  return `TdPrint-诊断日志-${date}-${time}.txt`;
+}
+
+/** 把诊断日志（运行环境、最近任务、应用日志）写到指定文件，返回字节数（见 src-tauri/src/tdprint.rs）。 */
+export function exportDiagnostics(path: string): Promise<number> {
+  return invoke<number>('tdprint_export_diagnostics', { path });
 }

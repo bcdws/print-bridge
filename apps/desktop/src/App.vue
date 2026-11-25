@@ -96,6 +96,8 @@ import { useOnboarding } from '@/onboarding';
 import {
   TDPRINT_SHOW_REMOTE,
   TDPRINT_SHOW_REPOSITORY_LINKS,
+  diagnosticsFileName,
+  exportDiagnostics,
   visibleAllowedIps,
   visibleAllowedOrigins,
 } from '@/tdprint';
@@ -494,6 +496,31 @@ async function handleExportConfig(): Promise<void> {
 async function confirmEmptyPasswordExport(): Promise<void> {
   showEmptyPasswordTokenConfirm.value = false;
   await runExportConfig();
+}
+
+const exportingDiagnostics = ref(false);
+
+/** TdPrint：导出诊断日志（运行环境、最近任务、应用日志），供仓库人员发给开发分析。 */
+async function downloadDiagnostics(): Promise<void> {
+  exportingDiagnostics.value = true;
+  errorMessage.value = '';
+  successMessage.value = '';
+
+  try {
+    const path = await saveDialog({
+      defaultPath: diagnosticsFileName(),
+      filters: [{ name: 'TdPrint Log', extensions: ['txt'] }],
+    });
+    if (!path) return;
+
+    await exportDiagnostics(path);
+    successMessage.value = t('logsDownloaded');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error ?? '');
+    errorMessage.value = message || t('downloadLogsFailed');
+  } finally {
+    exportingDiagnostics.value = false;
+  }
 }
 
 async function runExportConfig(): Promise<void> {
@@ -1843,6 +1870,15 @@ onBeforeUnmount(() => {
                 >
                   <Trash2 class="size-4" />
                   {{ confirmingClearTaskHistory ? t('confirmClear') : t('clear') }}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  :disabled="exportingDiagnostics"
+                  @click="downloadDiagnostics"
+                >
+                  <FileDown class="size-4" />
+                  {{ t('downloadLogs') }}
                 </Button>
               </div>
             </CardHeader>

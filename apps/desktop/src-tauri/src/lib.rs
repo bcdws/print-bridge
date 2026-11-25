@@ -7,6 +7,7 @@ pub mod cli_integration;
 pub mod commands;
 mod product_cli;
 pub use print_bridge_core::{config, ip_whitelist, protocol, remote_protocol};
+pub mod tdprint;
 pub mod tray;
 
 use config::AgentConfig;
@@ -67,7 +68,7 @@ fn existing_agent_startup_error(status: agent_guard::AgentPortStatus) -> Option<
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
-        .plugin(tauri_plugin_log::Builder::new().build())
+        .plugin(tdprint::log_plugin())
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -134,7 +135,8 @@ pub fn run() {
             commands::get_cli_integration_status,
             commands::install_cli_integration,
             commands::uninstall_cli_integration,
-            commands::print_test
+            commands::print_test,
+            tdprint::tdprint_export_diagnostics
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application");
