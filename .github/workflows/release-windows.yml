@@ -100,8 +100,12 @@ jobs:
           DIR="target/x86_64-pc-windows-msvc/release/bundle/nsis"
           INSTALLER="$(ls "$DIR"/TdPrint_"${VERSION}"_x64-setup.exe)"
           SIGNATURE="$(ls "$DIR"/TdPrint_"${VERSION}"_x64-setup.exe.sig)"
+          # 固定文件名副本：ERP 等页面用 releases/latest/download/TdPrint_x64-setup.exe 下载最新版，链接不随版本变化
+          STABLE="$DIR/TdPrint_x64-setup.exe"
+          cp "$INSTALLER" "$STABLE"
           echo "installer=$INSTALLER" >> "$GITHUB_OUTPUT"
           echo "signature=$SIGNATURE" >> "$GITHUB_OUTPUT"
+          echo "stable=$STABLE" >> "$GITHUB_OUTPUT"
 
       - name: Generate updater manifest
         shell: bash
@@ -148,6 +152,7 @@ jobs:
             --notes "${NOTES:-TdPrint v${VERSION}}" \
             "${{ steps.assets.outputs.installer }}" \
             "${{ steps.assets.outputs.signature }}" \
+            "${{ steps.assets.outputs.stable }}" \
             latest.json
 
       - name: Upload installer artifact

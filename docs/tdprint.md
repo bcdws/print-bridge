@@ -82,3 +82,5 @@ gh workflow run release-windows.yml -f bump=patch -f notes="更新说明"
 ```
 
 流程会递增版本号、提交并打 `tdprint-v*` tag、创建 GitHub Release，并生成客户端“检查更新”读取的 `latest.json`。
+
+Release 里另附固定文件名的 `TdPrint_x64-setup.exe`（与带版本号的安装包相同），ERP 面单预打印的「下载打印插件」固定链接 `https://github.com/bcdws/print-bridge/releases/latest/download/TdPrint_x64-setup.exe`，始终下载最新正式版。
