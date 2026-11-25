@@ -1,4 +1,7 @@
-//! TdPrint 发行版：固定访问令牌。
+//! TdPrint 发行版：内置网站白名单与固定访问令牌。
+//!
+//! 内置网站白名单（[`BUILTIN_ORIGINS`]，ERP 线上域名）始终放行，不读配置：界面上隐藏、
+//! 导入配置或手改 config.json 都删不掉，避免仓库人员误删后无法打印。
 //!
 //! 上游只按 IP 白名单 + Origin 白名单放行，局域网设备（PDA 等 App 内嵌页面的 Origin 是
 //! `http://localhost`）和本机调试页面都要逐台配置白名单。TdPrint 额外支持一个编译期注入的
@@ -19,6 +22,14 @@ use url::Url;
 /// 令牌查询参数名。
 pub const TOKEN_QUERY_PARAM: &str = "token";
 
+/// 内置网站白名单，始终放行（桌面端 `apps/desktop/src/tdprint.ts` 同步维护，用于在界面隐藏）。
+pub const BUILTIN_ORIGINS: &[&str] = &["https://oms.tongdacdsc.com", "https://pt.kuasuda.com"];
+
+/// Origin 是否在内置网站白名单中（精确匹配，与上游白名单规则一致）。
+pub fn is_builtin_origin(origin: Option<&str>) -> bool {
+    origin.is_some_and(|origin| BUILTIN_ORIGINS.contains(&origin))
+}
+
 /// 编译期注入的固定令牌；未注入或为空时返回 `None`，令牌认证关闭。
 pub fn builtin_token() -> Option<&'static str> {
     option_env!("TDPRINT_AUTH_TOKEN")
@@ -36,9 +47,9 @@ pub fn is_request_authorized(uri: &Uri, headers: &HeaderMap) -> bool {
     token_matches(builtin_token(), uri, headers)
 }
 
-/// 携带正确令牌时，Origin 为空或指向本机才放行（用于跳过 Origin 白名单）。
+/// 配置白名单之外额外放行的 Origin：内置网站白名单；或携带正确令牌且 Origin 为空 / 指向本机。
 pub fn allows_origin(uri: &Uri, headers: &HeaderMap, origin: Option<&str>) -> bool {
-    is_request_authorized(uri, headers) && is_local_origin(origin)
+    is_builtin_origin(origin) || (is_request_authorized(uri, headers) && is_local_origin(origin))
 }
 
 /// 比较请求携带的令牌与期望令牌。
@@ -168,10 +179,19 @@ mod tests {
 
     /// 在回环地址上起真实服务，发 WebSocket 握手，返回 HTTP 状态码（101 为升级成功）。
     async fn handshake_status(path: &str, origin: Option<&str>) -> u16 {
+        handshake_status_with_origins(path, origin, vec!["http://configured.example".to_string()])
+            .await
+    }
+
+    async fn handshake_status_with_origins(
+        path: &str,
+        origin: Option<&str>,
+        allowed_origins: Vec<String>,
+    ) -> u16 {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
         let mut config = AgentConfig::default();
-        config.security.allowed_origins = vec!["https://oms.tongdacdsc.com".to_string()];
+        config.security.allowed_origins = allowed_origins;
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let addr = listener.local_addr().unwrap();
         tokio::spawn(crate::server::serve_listener(
@@ -219,10 +239,29 @@ mod tests {
         format!("/ws?token={}", builtin_token().unwrap_or("not-built-in"))
     }
 
+    #[test]
+    fn builtin_origins_match_exactly() {
+        assert!(is_builtin_origin(Some("https://oms.tongdacdsc.com")));
+        assert!(is_builtin_origin(Some("https://pt.kuasuda.com")));
+        assert!(!is_builtin_origin(Some("http://pt.kuasuda.com")));
+        assert!(!is_builtin_origin(Some(
+            "https://pt.kuasuda.com.evil.example"
+        )));
+        assert!(!is_builtin_origin(None));
+    }
+
+    #[tokio::test]
+    async fn builtin_origin_is_allowed_even_when_config_allowlist_is_empty() {
+        assert_eq!(
+            handshake_status_with_origins("/ws", Some("https://pt.kuasuda.com"), Vec::new()).await,
+            101
+        );
+    }
+
     #[tokio::test]
     async fn allowlisted_origin_still_works_without_token() {
         assert_eq!(
-            handshake_status("/ws", Some("https://oms.tongdacdsc.com")).await,
+            handshake_status("/ws", Some("http://configured.example")).await,
             101
         );
     }
