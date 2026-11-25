@@ -288,9 +288,9 @@ export const messages = {
     openGithubFailed: '打开 GitHub 失败',
     openReleaseNotesFailed: '打开更新日志失败',
     licenseNotice:
-      '本软件基于 Vergil Lai 的开源项目 PrintBridge 二次开发，遵循 Apache License 2.0 发布。',
+      '本软件基于 Vergil Lai 的开源项目 PrintBridge（github.com/vergil-lai/print-bridge）二次开发，遵循 Apache License 2.0 发布。',
     licenseThirdParty:
-      '本项目包含第三方组件：SumatraPDF（GPLv3，仅 Windows），其余依赖许可见仓库中的 THIRD_PARTY_NOTICES.md。',
+      '本软件包含第三方组件：SumatraPDF（GPLv3，仅 Windows）。许可证全文与其余依赖许可见安装目录中的 LICENSE.txt、THIRD_PARTY_NOTICES.md。',
     upstreamRepository: '上游项目',
     viewLicense: '许可证',
     remoteTaskSwitch: '远程任务开关',
@@ -598,9 +598,9 @@ export const messages = {
     openGithubFailed: 'Failed to open GitHub',
     openReleaseNotesFailed: 'Failed to open release notes',
     licenseNotice:
-      'This software is a derivative work based on the open-source project PrintBridge by Vergil Lai, distributed under the Apache License 2.0.',
+      'This software is a derivative work based on the open-source project PrintBridge by Vergil Lai (github.com/vergil-lai/print-bridge), distributed under the Apache License 2.0.',
     licenseThirdParty:
-      'This product bundles third-party components: SumatraPDF (GPLv3, Windows only). Other dependency licenses are listed in THIRD_PARTY_NOTICES.md in the repository.',
+      'This product bundles third-party components: SumatraPDF (GPLv3, Windows only). The full license text and other dependency licenses are in LICENSE.txt and THIRD_PARTY_NOTICES.md in the installation folder.',
     upstreamRepository: 'Upstream project',
     viewLicense: 'License',
     remoteTaskSwitch: 'Remote task switch',

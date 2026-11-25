@@ -2,7 +2,9 @@
   "mainBinaryName": "TdPrint",
   "bundle": {
     "resources": {
-      "resources/windows/SumatraPDF.exe": "SumatraPDF.exe"
+      "resources/windows/SumatraPDF.exe": "SumatraPDF.exe",
+      "../../../LICENSE": "LICENSE.txt",
+      "../../../THIRD_PARTY_NOTICES.md": "THIRD_PARTY_NOTICES.md"
     }
   }
 }

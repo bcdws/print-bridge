@@ -6,7 +6,8 @@ import { invoke } from '@tauri-apps/api/core';
 /** 远程任务 Tab（以及状态检测里的远程任务分组）暂不开放。 */
 export const TDPRINT_SHOW_REMOTE = false;
 
-/** 关于页的 GitHub、更新日志按钮不展示；许可证与上游项目说明保留（Apache-2.0 归属要求）。 */
+/** 关于页不跳转 GitHub：隐藏 GitHub、更新日志、上游项目、许可证按钮；许可声明文字保留，
+ * 许可证全文随安装目录提供（tauri.windows.conf.json 的 LICENSE.txt、THIRD_PARTY_NOTICES.md）。 */
 export const TDPRINT_SHOW_REPOSITORY_LINKS = false;
 
 /** 不附带 print-bridge 命令行工具（发版不再构建 CLI），设置页隐藏命令行工具一栏。 */

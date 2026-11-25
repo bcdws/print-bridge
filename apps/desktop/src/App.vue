@@ -1833,7 +1833,7 @@ onBeforeUnmount(() => {
                 >
                   <p>{{ t('licenseNotice') }}</p>
                   <p>{{ t('licenseThirdParty') }}</p>
-                  <div class="flex flex-wrap gap-2 pt-1">
+                  <div v-if="TDPRINT_SHOW_REPOSITORY_LINKS" class="flex flex-wrap gap-2 pt-1">
                     <Button variant="outline" size="sm" @click="openUpstreamRepository">
                       <ExternalLink class="size-4" />
                       {{ t('upstreamRepository') }}
