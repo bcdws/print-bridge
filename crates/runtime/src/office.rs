@@ -122,6 +122,8 @@ pub async fn office_to_pdf(
     format: OfficeFormat,
     output_path: &Path,
 ) -> Result<&'static str, OfficeConvertError> {
+    // TdPrint：Office 文档打印已禁用，见 tdprint_policy.rs
+    crate::tdprint_policy::office_printing_guard()?;
     office_to_pdf_with_converter(
         input_path,
         format,

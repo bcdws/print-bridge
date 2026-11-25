@@ -31,9 +31,25 @@ export function visibleAllowedIps(entries: readonly string[]): string[] {
   return entries.filter((entry) => !TDPRINT_BUILTIN_IPS.includes(entry));
 }
 
-/** 状态检测分组：远程任务未开放时不展示其分组。 */
-export function visibleDoctorGroups<T extends { key: string }>(groups: T[]): T[] {
-  return TDPRINT_SHOW_REMOTE ? groups : groups.filter((group) => group.key !== 'remote');
+/** 状态检测隐藏的检查项：Office 转换器（Office 打印已禁用，见 tdprint_policy.rs）、未开放的远程任务。 */
+function isHiddenDoctorCheck(code: string): boolean {
+  return code.startsWith('office.') || (!TDPRINT_SHOW_REMOTE && code.startsWith('remote.'));
+}
+
+/** 去掉隐藏的检查项并重算汇总，「需处理」只看剩下的检查项。 */
+export function tdprintDoctorReport<
+  T extends {
+    checks: { code: string; status: string }[];
+    summary: { pass: number; warn: number; fail: number };
+  },
+>(report: T): T {
+  const checks = report.checks.filter((check) => !isHiddenDoctorCheck(check.code));
+  const count = (status: string) => checks.filter((check) => check.status === status).length;
+  return {
+    ...report,
+    checks,
+    summary: { ...report.summary, pass: count('PASS'), warn: count('WARN'), fail: count('FAIL') },
+  };
 }
 
 /** 诊断日志默认文件名：TdPrint-诊断日志-20261125-153000.txt（本机时间）。 */
