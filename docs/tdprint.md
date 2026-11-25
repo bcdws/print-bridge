@@ -9,13 +9,19 @@ TdPrint 是基于 [PrintBridge](https://github.com/vergil-lai/print-bridge) 的�
 | 产品名 TdPrint、identifier、更新器公钥与端点 | `apps/desktop/src-tauri/tauri*.conf.json` |
 | 配置目录 `com.td.printbridge` | `crates/core/src/config.rs` |
 | 内置网站白名单、固定访问令牌（见下） | `crates/runtime/src/tdprint_auth.rs`，调用点在 `crates/runtime/src/server.rs` |
+| 禁用 Office 文档打印（见下） | `crates/runtime/src/tdprint_policy.rs`，调用点在 `crates/runtime/src/office.rs` |
 | 日志级别与大小限制、诊断日志导出（见下） | `apps/desktop/src-tauri/src/tdprint.rs`，调用点在 `src-tauri/src/lib.rs` |
-| 界面：隐藏远程任务 Tab、关于页 GitHub / 更新日志按钮、内置白名单 | `apps/desktop/src/tdprint.ts`，调用点在 `App.vue`、`StatusDoctorSheet.vue` |
-| Windows 发版流程 | `.github/workflows/release-windows.yml`、`scripts/tdprint-*.mjs` |
+| 界面：隐藏远程任务 Tab、命令行工具、关于页所有 GitHub 跳转、内置白名单，状态检测隐藏 Office 与远程任务 | `apps/desktop/src/tdprint.ts`，调用点在 `App.vue`、`StatusDoctorSheet.vue` |
+| 不附带 print-bridge 命令行工具；安装目录附带 `LICENSE.txt`、`THIRD_PARTY_NOTICES.md` | `apps/desktop/src-tauri/tauri.windows.conf.json` |
+| Windows 发版流程（不构建命令行工具） | `.github/workflows/release-windows.yml`、`scripts/tdprint-*.mjs` |
 
 ## 内置网站白名单
 
 `https://oms.tongdacdsc.com`、`https://pt.kuasuda.com` 由插件后端**始终放行**，不读配置文件；界面上不显示，导入配置或手改 `config.json` 也删不掉。修改时 `tdprint_auth.rs` 的 `BUILTIN_ORIGINS` 与 `tdprint.ts` 的 `TDPRINT_BUILTIN_ORIGINS` 同步改。IP 白名单的 `127.0.0.1` 同样在界面隐藏（上游本就固定放行）。
+
+## 禁用 Office 文档打印
+
+仓库只打印面单（PDF / 图片 / raw 指令）。docx / xlsx / pptx 任务在 `office_to_pdf` 转换前直接失败（原因：已禁用 Office 文档打印，请转换为 PDF），WebSocket 与远程任务都覆盖，不会启动 Office / WPS 进程。状态检测不再显示 Office 转换器。恢复时把 `tdprint_policy.rs` 的 `OFFICE_PRINTING_ENABLED` 改为 `true`，并去掉 `tdprint.ts` 中对 `office.` 检查项的隐藏。
 
 ## 固定访问令牌
 
