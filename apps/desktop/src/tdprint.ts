@@ -9,6 +9,9 @@ export const TDPRINT_SHOW_REMOTE = false;
 /** 关于页的 GitHub、更新日志按钮不展示；许可证与上游项目说明保留（Apache-2.0 归属要求）。 */
 export const TDPRINT_SHOW_REPOSITORY_LINKS = false;
 
+/** 不附带 print-bridge 命令行工具（发版不再构建 CLI），设置页隐藏命令行工具一栏。 */
+export const TDPRINT_SHOW_CLI = false;
+
 /**
  * 内置网站白名单：插件后端始终放行（crates/runtime/src/tdprint_auth.rs 的 BUILTIN_ORIGINS，两处同步维护），
  * 界面上隐藏，避免仓库人员误删。

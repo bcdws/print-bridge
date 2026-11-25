@@ -83,9 +83,6 @@ jobs:
             exit 1
           fi
 
-      - name: Prepare Windows CLI sidecar
-        run: node scripts/prepare-windows-cli.mjs x86_64-pc-windows-msvc
-
       - name: Build NSIS installer
         env:
           TDPRINT_AUTH_TOKEN: ${{ secrets.TDPRINT_AUTH_TOKEN }}

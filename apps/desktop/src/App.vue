@@ -94,6 +94,7 @@ import StatusDoctorSheet from '@/components/StatusDoctorSheet.vue';
 import { DEFAULT_UI_LANGUAGE, isUiLanguage, setI18nLocale, type UiLanguage } from '@/i18n';
 import { useOnboarding } from '@/onboarding';
 import {
+  TDPRINT_SHOW_CLI,
   TDPRINT_SHOW_REMOTE,
   TDPRINT_SHOW_REPOSITORY_LINKS,
   diagnosticsFileName,
@@ -1220,7 +1221,7 @@ onMounted(() => {
   setupThemeSync();
   void loadConfig();
   void loadAppVersion();
-  void loadCliIntegrationStatus();
+  if (TDPRINT_SHOW_CLI) void loadCliIntegrationStatus();
 });
 
 onBeforeUnmount(() => {
@@ -1530,7 +1531,7 @@ onBeforeUnmount(() => {
                 </div>
 
                 <CliIntegrationRow
-                  v-if="cliIntegrationStatus"
+                  v-if="TDPRINT_SHOW_CLI && cliIntegrationStatus"
                   :status="cliIntegrationStatus"
                   :loading="changingCliIntegration"
                   @install="changeCliIntegration('install')"

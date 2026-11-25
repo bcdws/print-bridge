@@ -201,8 +201,8 @@ export const messages = {
     onboardingPrintingDescription: '选择默认打印机和纸张尺寸，并可提交一张测试页确认打印链路。',
     onboardingServiceTitle: '本地服务',
     onboardingServiceDescription: '配置服务端口和开机自启；修改后使用顶部“保存”应用设置。',
-    onboardingPreferencesTitle: '偏好与命令行',
-    onboardingPreferencesDescription: '切换主题和界面语言，并查看或管理 print-bridge 命令行工具。',
+    onboardingPreferencesTitle: '偏好设置',
+    onboardingPreferencesDescription: '切换主题和界面语言。',
     onboardingTransferTitle: '配置迁移',
     onboardingTransferDescription: '通过顶部按钮导出或导入配置，方便备份和迁移设备。',
     onboardingRemoteTitle: '远程任务',
@@ -504,9 +504,8 @@ export const messages = {
     onboardingServiceTitle: 'Local service',
     onboardingServiceDescription:
       'Configure the service port and launch at startup, then use Save at the top to apply changes.',
-    onboardingPreferencesTitle: 'Preferences and CLI',
-    onboardingPreferencesDescription:
-      'Switch the theme and interface language, and view or manage the print-bridge command-line tool.',
+    onboardingPreferencesTitle: 'Preferences',
+    onboardingPreferencesDescription: 'Switch the theme and interface language.',
     onboardingTransferTitle: 'Config transfer',
     onboardingTransferDescription:
       'Export or import configuration from the top actions to back up settings or move devices.',
