@@ -2,7 +2,7 @@ name: release-windows
 
 # 只在手动触发时运行，平时 commit 不会构建。
 # 用法：在 Actions 页面点 Run workflow，或
-#   gh workflow run release-windows.yml -f bump=patch -f notes="修复 XXX"
+#   gh workflow run release-windows.yml -R bcdws/print-bridge -f bump=patch -f notes="修复 XXX"
 on:
   workflow_dispatch:
     inputs:

@@ -1,0 +1,76 @@
+name: build-windows
+
+# 只构建 Windows 测试安装包：不改版本号、不打 tag、不创建 Release，现有客户端不会收到更新。
+# 用法：在 Actions 页面点 Run workflow，或
+#   gh workflow run build-windows.yml -R bcdws/print-bridge --ref <分支>
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 11.7.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: . -> target
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Read version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node scripts/tdprint-version.mjs current)"
+          echo "name=TdPrint-${VERSION}-${GITHUB_SHA::7}-windows-x64-test" >> "$GITHUB_OUTPUT"
+
+      # 缺少令牌不阻止试构建，但产出的安装包不支持固定令牌认证。
+      - name: Check TdPrint auth token
+        shell: bash
+        env:
+          TDPRINT_AUTH_TOKEN: ${{ secrets.TDPRINT_AUTH_TOKEN }}
+        run: |
+          if [ -z "${TDPRINT_AUTH_TOKEN// /}" ]; then
+            echo "::warning::未设置仓库 Secret TDPRINT_AUTH_TOKEN，本次安装包的令牌认证关闭"
+          fi
+
+      # tauri.test-build.conf.json 关闭更新产物，因此试构建不需要更新签名私钥。
+      - name: Build NSIS installer
+        env:
+          TDPRINT_AUTH_TOKEN: ${{ secrets.TDPRINT_AUTH_TOKEN }}
+        run: pnpm --dir apps/desktop tauri build --target x86_64-pc-windows-msvc --bundles nsis --config src-tauri/tauri.test-build.conf.json
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.version.outputs.name }}
+          path: target/x86_64-pc-windows-msvc/release/bundle/nsis/*-setup.exe
+          if-no-files-found: error
+          retention-days: 14
