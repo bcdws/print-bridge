@@ -35,7 +35,7 @@ Format only files you changed. Known failures (2026-11-26): `timeout_cancels_wor
 
 ## Building
 
-Prefer GitHub CI. Always pass `-R bcdws/print-bridge` to `gh` (it defaults to upstream).
+Windows 打包一律走 GitHub CI，**不要在本地打包**（本地不保留 Windows 构建产物，`target/` 下的 xwin 产物可随时删除）。Always pass `-R bcdws/print-bridge` to `gh` (it defaults to upstream).
 
 ```bash
 # test installer, no release; builds pushed code only
@@ -47,13 +47,6 @@ gh workflow run release-windows.yml -R bcdws/print-bridge -f bump=patch -f notes
 
 - A release reaches all clients immediately: **ask the user first**. It runs no tests and pushes a version commit to `main`. Never bump versions by hand.
 - Do not trigger other release/publish workflows or push a `release` branch.
-
-Local fallback (8 GB RAM):
-
-```bash
-pnpm --dir apps/desktop tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc \
-  --bundles nsis --config src-tauri/tauri.test-build.conf.json
-```
 
 ## Architecture
 
